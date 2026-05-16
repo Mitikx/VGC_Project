@@ -1,6 +1,4 @@
-// Types partagés entre frontend et backend
-// Idéalement on les générerait depuis Prisma, mais pour rester simple
-// on les duplique en s'assurant qu'ils correspondent au backend.
+// Types partagés (alignés sur le backend)
 
 export interface User {
   id: string
@@ -14,7 +12,51 @@ export interface AuthResponse {
   token: string
 }
 
-export interface ApiError {
-  error: string
-  details?: Record<string, string[]>
+export type GameResult = 'WIN' | 'LOSS'
+
+export interface Game {
+  id: string
+  userId: string
+  playedAt: string
+  result: GameResult
+  advTeam: string[]
+  advLeads: string[]
+  myLeads: string[]
+  myPlayed: string[]
+  archetype: string | null
+  turn: string | null
+  speed: string | null
+  luck: string | null
+  mental: string | null
+  rating: number | null
+  tags: string[]
+  noteKey: string
+  noteGood: string
+  noteBad: string
+  createdAt: string
+}
+
+export interface Team {
+  id: string
+  userId: string
+  pokemon: string[]
+  updatedAt: string
+}
+
+export type CreateGameInput = {
+  result: GameResult
+  advTeam?: string[]
+  advLeads?: string[]
+  myLeads?: string[]
+  myPlayed?: string[]
+  archetype?: string | null
+  turn?: string | null
+  speed?: string | null
+  luck?: string | null
+  mental?: string | null
+  rating?: number | null
+  tags?: string[]
+  noteKey?: string
+  noteGood?: string
+  noteBad?: string
 }

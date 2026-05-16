@@ -2,70 +2,42 @@
 
 React 18 + TypeScript + Vite + Tailwind + Zustand + React Router
 
-## Étape 3 — Frontend qui se connecte au backend
+## 🔄 Étape 4 — Frontend qui parle au backend
 
-### 1. Installer les dépendances
+### Mise à jour
 
 ```bash
 cd frontend
+# Les dépendances sont les mêmes qu'à l'étape 3, mais relance install
+# si tu as téléchargé un zip frais
 npm install
-```
-
-### 2. Configurer l'environnement
-
-```bash
-# Copier le template
-cp .env.example .env
-
-# Le contenu par défaut suffit si ton backend tourne sur http://localhost:3000
-```
-
-### 3. Lancer le serveur de dev
-
-```bash
 npm run dev
 ```
 
-Ouvre http://localhost:5173
+### Ce qui marche maintenant
 
-### 4. Tester l'app
+La page d'accueil affiche :
+- Ton équipe (chargée depuis la DB, créée automatiquement par défaut)
+- Tes stats (parties, victoires, défaites)
+- Un bouton "Ajouter une partie test" pour démontrer le POST
+- La liste de tes parties avec bouton supprimer
 
-**Important** : le backend (sur le port 3000) doit tourner en parallèle.
+C'est une UI **basique** uniquement pour valider que la chaîne complète marche :
+**Frontend → Backend → DB → DB → Backend → Frontend**
 
-Tu auras 3 pages :
-- `/register` — créer un compte
-- `/login` — se connecter
-- `/` — page protégée (redirige vers /login si pas connecté)
+À l'étape 5 on remplacera ça par un vrai formulaire de saisie avec autocomplete Pokémon, tags, notes, etc.
 
-**Flow de test** :
-1. Créer un compte sur `/register` → tu es redirigé sur la home
-2. Tu vois tes infos affichées
-3. Clic "Déconnexion" → retour login
-4. Te reconnecter → home
-5. Recharger la page : tu restes connecté (le token est persisté)
+### Test à faire
 
-## Structure
+1. Va sur http://localhost:5173 (connecté)
+2. Tu vois ton équipe par défaut
+3. Clique "Ajouter une partie test" plusieurs fois
+4. Les parties s'affichent
+5. Recharge la page : elles sont toujours là (DB)
+6. Déconnecte-toi puis reconnecte : tes parties sont là
+7. Crée un autre compte : ses parties sont isolées (chacun voit les siennes)
 
-```
-src/
-├── main.tsx                      Point d'entrée + BrowserRouter
-├── App.tsx                       Routes
-├── index.css                     Tailwind + composants utilitaires
-├── lib/
-│   └── api.ts                    Client API centralisé + gestion erreurs
-├── store/
-│   └── useAuthStore.ts           État global auth (Zustand + persist)
-├── components/
-│   └── ProtectedRoute.tsx        HOC pour protéger les routes
-├── pages/
-│   ├── LoginPage.tsx
-│   ├── RegisterPage.tsx
-│   └── HomePage.tsx
-└── types/
-    └── index.ts                  Types partagés
-```
+## Avancement
 
-## Prochaine étape
-
-✅ Étape 3 — Frontend setup + connexion au backend
-⬜ **Étape 4** — CRUD parties (créer, lire, supprimer des parties en DB)
+✅ Étape 4 — CRUD parties depuis le frontend
+⬜ Étape 5 — UI saisie complète avec autocomplete + stats

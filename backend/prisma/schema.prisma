@@ -1,5 +1,4 @@
 // Schéma Prisma pour VGC-Pro
-// Documentation : https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -10,8 +9,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Pour l'étape 1, on crée juste un modèle User minimal
-// On enrichira avec Game, Team etc. dans les étapes suivantes
+// ── Utilisateur ────────────────────────────────────────────────────────────
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -20,5 +18,65 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Relations
+  team    Team?
+  games   Game[]
+
   @@map("users")
+}
+
+// ── Équipe (1 par utilisateur) ─────────────────────────────────────────────
+// On stocke les 6 noms dans un tableau de strings.
+// Les rôles/notes peuvent être ajoutés plus tard via un modèle séparé.
+model Team {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pokemon   String[] // tableau des 6 noms
+  updatedAt DateTime @updatedAt
+
+  @@map("teams")
+}
+
+// ── Partie ─────────────────────────────────────────────────────────────────
+// Pour rester simple et flexible, on stocke pokémon adverses / leads / etc.
+// comme des tableaux de strings. Les champs "détails" sont optionnels.
+model Game {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playedAt  DateTime @default(now())
+
+  // Résultat
+  result    GameResult
+
+  // Pokémon
+  advTeam   String[] // 4 Pokémon de la team adverse
+  advLeads  String[] // 2 leads adverses
+  myLeads   String[] // 2 mes leads
+  myPlayed  String[] // 2 Pokémon que j'ai joué
+
+  // Détails optionnels
+  archetype String?
+  turn      String?  // "T1" | "T2" | "T3+"
+  speed     String?  // "Oui" | "Non" | "Neutre"
+  luck      String?  // "Bon luck" | "Neutre" | "Malchance"
+  mental    String?  // "Focus" | "Neutre" | "Fatigué" | "Tilté"
+  rating    Int?     // 1-5
+  tags      String[] // tags libres
+
+  // Notes
+  noteKey   String  @default("") // moment clé
+  noteGood  String  @default("") // ce que j'ai bien fait
+  noteBad   String  @default("") // ce que j'ai mal fait
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, playedAt])
+  @@map("games")
+}
+
+enum GameResult {
+  WIN
+  LOSS
 }
