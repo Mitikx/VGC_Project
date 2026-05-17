@@ -42,10 +42,4 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Route non trouvée' })
 })
 
-app.listen(env.PORT, () => {
-  console.log(`\n🚀 VGC-Pro API démarrée`)
-  console.log(`   → http://localhost:${env.PORT}`)
-  console.log(`   → Health: http://localhost:${env.PORT}/api/health`)
-  console.log(`   → Routes: voir http://localhost:${env.PORT}/`)
-  console.log(`   → Env:    ${env.NODE_ENV}\n`)
-})
+export default app
