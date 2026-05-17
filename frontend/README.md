@@ -2,42 +2,46 @@
 
 React 18 + TypeScript + Vite + Tailwind + Zustand + React Router
 
-## 🔄 Étape 4 — Frontend qui parle au backend
+## 🎨 Étape 5 — Vraie UI complète
 
 ### Mise à jour
 
 ```bash
 cd frontend
-# Les dépendances sont les mêmes qu'à l'étape 3, mais relance install
-# si tu as téléchargé un zip frais
-npm install
+npm install   # juste au cas où
 npm run dev
 ```
 
-### Ce qui marche maintenant
+### Ce que tu as maintenant
 
-La page d'accueil affiche :
-- Ton équipe (chargée depuis la DB, créée automatiquement par défaut)
-- Tes stats (parties, victoires, défaites)
-- Un bouton "Ajouter une partie test" pour démontrer le POST
-- La liste de tes parties avec bouton supprimer
+**Layout général** :
+- Sidebar à gauche (desktop)
+- Bottom navigation (mobile)
+- 4 pages principales
 
-C'est une UI **basique** uniquement pour valider que la chaîne complète marche :
-**Frontend → Backend → DB → DB → Backend → Frontend**
+**Pages** :
+- `/` — **Parties** : liste avec recherche + filtres (toutes / victoires / défaites)
+- `/new` — **Nouvelle partie** : formulaire complet avec autocomplete Pokémon
+- `/stats` — **Statistiques** : winrate, duos, leads, adversaires, archétypes, mental, etc.
+- `/team` — **Équipe** : édition des 6 Pokémon
 
-À l'étape 5 on remplacera ça par un vrai formulaire de saisie avec autocomplete Pokémon, tags, notes, etc.
+**Composants réutilisables** :
+- `Autocomplete` — sélection de Pokémon avec recherche
+- `GameCard` — affichage d'une partie
+- `Layout` — sidebar + nav
 
 ### Test à faire
 
-1. Va sur http://localhost:5173 (connecté)
-2. Tu vois ton équipe par défaut
-3. Clique "Ajouter une partie test" plusieurs fois
-4. Les parties s'affichent
-5. Recharge la page : elles sont toujours là (DB)
-6. Déconnecte-toi puis reconnecte : tes parties sont là
-7. Crée un autre compte : ses parties sont isolées (chacun voit les siennes)
+1. Va sur `/team` → édite ton équipe
+2. Va sur `/new` → crée une vraie partie (saisis quelques Pokémon, joue avec les détails)
+3. Retour sur `/` → tu vois ta partie dans la liste
+4. Va sur `/stats` → tu vois les premières stats
+5. Crée plusieurs parties pour voir les stats évoluer
+6. Teste la recherche sur `/`
+7. Teste le mobile (Ctrl+Shift+I → mode device)
 
 ## Avancement
 
-✅ Étape 4 — CRUD parties depuis le frontend
-⬜ Étape 5 — UI saisie complète avec autocomplete + stats
+✅ Étape 5 — Vraie UI complète
+⬜ Étape 6 — Coach / insights automatiques
+⬜ Étape 7 — Features avancées (speed tier, quiz, draft, encyclopédie)
