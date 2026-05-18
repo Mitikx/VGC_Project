@@ -9,68 +9,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ── Utilisateur ────────────────────────────────────────────────────────────
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String
+  bio           String   @default("")
+  publicProfile Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  // Relations
   team    Team?
   games   Game[]
 
   @@map("users")
 }
 
-// ── Équipe (1 par utilisateur) ─────────────────────────────────────────────
-// On stocke les 6 noms dans un tableau de strings.
-// Les rôles/notes peuvent être ajoutés plus tard via un modèle séparé.
 model Team {
   id        String   @id @default(cuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pokemon   String[] // tableau des 6 noms
+  pokemon   String[]
   updatedAt DateTime @updatedAt
 
   @@map("teams")
 }
 
-// ── Partie ─────────────────────────────────────────────────────────────────
-// Pour rester simple et flexible, on stocke pokémon adverses / leads / etc.
-// comme des tableaux de strings. Les champs "détails" sont optionnels.
 model Game {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   playedAt  DateTime @default(now())
 
-  // Résultat
   result    GameResult
 
-  // Pokémon
-  advTeam   String[] // 4 Pokémon de la team adverse
-  advLeads  String[] // 2 leads adverses
-  myLeads   String[] // 2 mes leads
-  myPlayed  String[] // 2 Pokémon que j'ai joué
+  advTeam   String[]
+  advLeads  String[]
+  myLeads   String[]
+  myPlayed  String[]
 
-  // Détails optionnels
   archetype String?
-  turn      String?  // "T1" | "T2" | "T3+"
-  speed     String?  // "Oui" | "Non" | "Neutre"
-  luck      String?  // "Bon luck" | "Neutre" | "Malchance"
-  mental    String?  // "Focus" | "Neutre" | "Fatigué" | "Tilté"
-  rating    Int?     // 1-5
-  tags      String[] // tags libres
+  turn      String?
+  speed     String?
+  luck      String?
+  mental    String?
+  rating    Int?
+  tags      String[]
 
-  // Notes
-  noteKey   String  @default("") // moment clé
-  noteGood  String  @default("") // ce que j'ai bien fait
-  noteBad   String  @default("") // ce que j'ai mal fait
+  noteKey   String  @default("")
+  noteGood  String  @default("")
+  noteBad   String  @default("")
+
+  shareToken String? @unique
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, playedAt])
   @@map("games")

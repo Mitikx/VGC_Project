@@ -2,15 +2,7 @@
 
 Application web pour la communauté VGC Pokémon Champions FR.
 
-## Avancement
-
-✅ Étape 1 — Setup backend
-✅ Étape 2 — Authentification (JWT)
-✅ Étape 3 — Frontend ↔ backend (login/register)
-✅ Étape 4 — **CRUD parties + équipe en DB**
-⬜ Étape 5 — UI saisie complète (formulaire avec autocomplete Pokémon)
-⬜ Étape 6 — Page stats + coach
-⬜ Étape 7 — Features avancées
+## ✅ Étape 6 — Édition + partage + profils publics + calendrier + saisie rapide
 
 ## Démarrage
 
@@ -18,7 +10,7 @@ Application web pour la communauté VGC Pokémon Champions FR.
 ```bash
 cd backend
 npm install
-npm run db:push     # crée les tables games + teams
+npm run db:push   # ⚠️ Important : applique les changements de schéma
 npm run dev
 ```
 
@@ -31,4 +23,21 @@ npm run dev
 
 Ouvre http://localhost:5173
 
-Voir `backend/README.md` et `frontend/README.md` pour les détails.
+## Nouvelles routes
+
+**Privées :**
+- `/quick` — saisie rapide
+- `/games/:id` — détail/édition d'une partie
+- `/profile` — édition de mon profil
+
+**Publiques (sans compte) :**
+- `/u/:username` — profil public d'un user
+- `/share/:token` — partie partagée
+
+## Tests à faire
+
+1. **Saisie rapide** : clique "⚡ Rapide" → Victoire + 4 Pokémon → tu arrives sur la page détail
+2. **Édition** : sur la page détail, clique "Éditer" → modifie et enregistre
+3. **Partage** : sur la page détail, active le partage → copie le lien → ouvre dans une fenêtre privée
+4. **Profil** : clique "Profil" → active le profil public + bio → enregistre → va sur `/u/ton_username`
+5. **Calendrier** : clique "Voir le calendrier" sur la page Parties

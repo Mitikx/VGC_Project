@@ -1,14 +1,16 @@
-// Page principale : liste des parties avec recherche + filtre
+// Page principale : liste des parties avec recherche, filtres et calendrier
 
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useGamesStore } from '@/store/useGamesStore'
 import { GameCard } from '@/components/GameCard'
+import { GameCalendar } from '@/components/GameCalendar'
 
 export function PartiesPage() {
   const { games, loading, loaded, fetchGames, removeGame } = useGamesStore()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<'all' | 'win' | 'loss'>('all')
+  const [showCalendar, setShowCalendar] = useState(false)
 
   useEffect(() => {
     if (!loaded) fetchGames()
@@ -40,10 +42,12 @@ export function PartiesPage() {
           <h1 className="text-2xl font-bold">Mes parties</h1>
           <p className="text-sm text-text2 mt-1">{total} parties enregistrées</p>
         </div>
-        <Link to="/new" className="btn btn-primary">+ Nouvelle</Link>
+        <div className="flex gap-2">
+          <Link to="/quick" className="btn">⚡ Rapide</Link>
+          <Link to="/new" className="btn btn-primary">+ Nouvelle</Link>
+        </div>
       </header>
 
-      {/* Stats rapides */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         <StatCell label="Parties" value={total} />
         <StatCell label="Victoires" value={wins} variant="win" />
@@ -51,7 +55,23 @@ export function PartiesPage() {
         <StatCell label="Winrate" value={total > 0 ? `${wr}%` : '—'} />
       </div>
 
-      {/* Recherche + filtres */}
+      {games.length > 0 && (
+        <div className="mb-4">
+          <button
+            onClick={() => setShowCalendar(!showCalendar)}
+            className="text-xs text-text2 hover:text-text1 flex items-center gap-1"
+          >
+            <span className={`text-[10px] transition-transform ${showCalendar ? 'rotate-90' : ''}`}>▶</span>
+            {showCalendar ? 'Masquer le calendrier' : 'Voir le calendrier'}
+          </button>
+        </div>
+      )}
+      {showCalendar && games.length > 0 && (
+        <div className="mb-4">
+          <GameCalendar games={games} />
+        </div>
+      )}
+
       <div className="space-y-3 mb-4">
         <input
           type="text"
@@ -81,13 +101,12 @@ export function PartiesPage() {
         </div>
       </div>
 
-      {/* Liste */}
       {loading && !loaded ? (
         <div className="text-center py-12 text-text2">Chargement…</div>
       ) : filtered.length === 0 ? (
         <div className="card text-center py-12 text-text2">
           {games.length === 0
-            ? <>Aucune partie pour l'instant.<br/><Link to="/new" className="text-accent2 hover:underline">Crée ta première partie</Link></>
+            ? <>Aucune partie pour l'instant.<br/><Link to="/quick" className="text-accent2 hover:underline">Saisie rapide</Link> ou <Link to="/new" className="text-accent2 hover:underline">détaillée</Link></>
             : 'Aucune partie ne correspond à ta recherche.'}
         </div>
       ) : (

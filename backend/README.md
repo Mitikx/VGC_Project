@@ -2,50 +2,33 @@
 
 API Node.js + Express + TypeScript + Prisma + PostgreSQL
 
-## 🔄 Étape 4 — CRUD parties et équipe
+## 🚀 Étape 6 — Édition, partage, profils publics
 
 ### Mise à jour
 
 ```bash
 cd backend
 
-# 1. Mettre à jour le schéma DB (nouvelles tables : Team, Game)
+# Le schéma a changé : nouveaux champs (bio, publicProfile, shareToken)
 npm run db:push
 
-# 2. Redémarrer le serveur
+# Relance le serveur
 npm run dev
 ```
 
-⚠️ Le `db:push` va créer les tables `teams` et `games`. Tes données users existantes ne sont pas affectées.
+⚠️ Le `db:push` ajoute les champs `bio`, `publicProfile` (sur User) et `shareToken` (sur Game). Tes données existantes sont conservées.
 
 ### Nouveaux endpoints
 
-Toutes ces routes nécessitent un header `Authorization: Bearer <token>` (sauf register/login/health).
+#### Parties
+- `PUT /api/games/:id` — éditer une partie
+- `POST /api/games/:id/share` — activer un lien public
+- `DELETE /api/games/:id/share` — désactiver
 
-#### Parties (CRUD)
-- `POST /api/games` — créer une partie
-- `GET /api/games` — lister mes parties
-- `GET /api/games/:id` — détail
-- `DELETE /api/games/:id` — supprimer
+#### Profil
+- `GET /api/profile` — mon profil complet
+- `PUT /api/profile` — éditer bio + visibilité
 
-#### Équipe
-- `GET /api/team` — récupérer mon équipe (en crée une par défaut si vide)
-- `PUT /api/team` — mettre à jour mon équipe (les 6 Pokémon)
-
-### Structure du schéma DB
-
-```
-users  ── 1:1 ── teams
-       └─ 1:N ── games
-```
-
-Chaque user a UNE équipe (créée automatiquement à la première requête) et N parties.
-
-## Avancement
-
-✅ Étape 1 — Setup backend
-✅ Étape 2 — Auth (JWT)
-✅ Étape 3 — Frontend connecté
-✅ Étape 4 — CRUD parties + équipe
-⬜ Étape 5 — Vraie UI parties + saisie complète + stats
-⬜ ...
+#### Public (sans auth)
+- `GET /api/public/users/:username` — profil public + stats
+- `GET /api/public/share/:token` — partie partagée

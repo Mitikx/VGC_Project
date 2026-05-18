@@ -1,7 +1,6 @@
 // Client API centralisé
-// Toute communication avec le backend passe par ce fichier.
 
-import type { AuthResponse, User, Game, Team, CreateGameInput } from '@/types'
+import type { AuthResponse, User, Game, Team, CreateGameInput, PublicUserProfile, SharedGameResponse } from '@/types'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -24,7 +23,6 @@ type RequestOptions = {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token } = options
-
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
@@ -54,7 +52,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   return data as T
 }
 
-// On expose une API typée et organisée par domaine
 export const api = {
   auth: {
     register: (body: { email: string; username: string; password: string }) =>
@@ -71,15 +68,33 @@ export const api = {
       request<{ game: Game }>(`/api/games/${id}`, { token }),
     create: (token: string, body: CreateGameInput) =>
       request<{ game: Game }>('/api/games', { method: 'POST', body, token }),
+    update: (token: string, id: string, body: CreateGameInput) =>
+      request<{ game: Game }>(`/api/games/${id}`, { method: 'PUT', body, token }),
     delete: (token: string, id: string) =>
       request<void>(`/api/games/${id}`, { method: 'DELETE', token }),
+    enableShare: (token: string, id: string) =>
+      request<{ game: Game; shareToken: string }>(`/api/games/${id}/share`, { method: 'POST', token }),
+    disableShare: (token: string, id: string) =>
+      request<{ game: Game }>(`/api/games/${id}/share`, { method: 'DELETE', token }),
   },
 
   team: {
-    get: (token: string) =>
-      request<{ team: Team }>('/api/team', { token }),
+    get: (token: string) => request<{ team: Team }>('/api/team', { token }),
     update: (token: string, pokemon: string[]) =>
       request<{ team: Team }>('/api/team', { method: 'PUT', body: { pokemon }, token }),
+  },
+
+  profile: {
+    get: (token: string) => request<{ user: User }>('/api/profile', { token }),
+    update: (token: string, body: { bio: string; publicProfile: boolean }) =>
+      request<{ user: User }>('/api/profile', { method: 'PUT', body, token }),
+  },
+
+  public: {
+    user: (username: string) =>
+      request<PublicUserProfile>(`/api/public/users/${encodeURIComponent(username)}`),
+    sharedGame: (shareToken: string) =>
+      request<SharedGameResponse>(`/api/public/share/${shareToken}`),
   },
 
   health: () => request<{ status: string; database: string }>('/api/health'),
