@@ -1,19 +1,15 @@
-// CRUD des parties (toutes les routes sont protégées par requireAuth)
-//   POST   /api/games      - créer une partie
-//   GET    /api/games      - lister mes parties (les plus récentes en premier)
-//   GET    /api/games/:id  - détail d'une partie
-//   DELETE /api/games/:id  - supprimer une partie
+// CRUD des parties + édition + partage public
 
 import { Router, type Request, type Response } from 'express'
 import { z } from 'zod'
+import { randomBytes } from 'crypto'
 import { prisma } from '../prisma.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 
 const router = Router()
-router.use(requireAuth) // toutes les routes ci-dessous nécessitent un token
+router.use(requireAuth)
 
-// Schéma de validation pour créer une partie
-const createGameSchema = z.object({
+const gameInputSchema = z.object({
   result: z.enum(['WIN', 'LOSS']),
   advTeam:  z.array(z.string()).max(4).default([]),
   advLeads: z.array(z.string()).max(2).default([]),
@@ -31,41 +27,36 @@ const createGameSchema = z.object({
   noteBad:   z.string().default(''),
 })
 
-// ── POST /api/games ────────────────────────────────────────────────────────
 router.post('/', async (req: Request, res: Response) => {
-  const parsed = createGameSchema.safeParse(req.body)
+  const parsed = gameInputSchema.safeParse(req.body)
   if (!parsed.success) {
-    return res.status(400).json({
-      error: 'Validation échouée',
-      details: parsed.error.flatten().fieldErrors,
-    })
+    return res.status(400).json({ error: 'Validation échouée', details: parsed.error.flatten().fieldErrors })
   }
 
-  const data = parsed.data
+  const d = parsed.data
   const game = await prisma.game.create({
     data: {
       userId: req.user!.userId,
-      result: data.result,
-      advTeam: data.advTeam.filter(Boolean),
-      advLeads: data.advLeads.filter(Boolean),
-      myLeads: data.myLeads.filter(Boolean),
-      myPlayed: data.myPlayed.filter(Boolean),
-      archetype: data.archetype ?? null,
-      turn: data.turn ?? null,
-      speed: data.speed ?? null,
-      luck: data.luck ?? null,
-      mental: data.mental ?? null,
-      rating: data.rating ?? null,
-      tags: data.tags,
-      noteKey: data.noteKey,
-      noteGood: data.noteGood,
-      noteBad: data.noteBad,
+      result: d.result,
+      advTeam: d.advTeam.filter(Boolean),
+      advLeads: d.advLeads.filter(Boolean),
+      myLeads: d.myLeads.filter(Boolean),
+      myPlayed: d.myPlayed.filter(Boolean),
+      archetype: d.archetype ?? null,
+      turn: d.turn ?? null,
+      speed: d.speed ?? null,
+      luck: d.luck ?? null,
+      mental: d.mental ?? null,
+      rating: d.rating ?? null,
+      tags: d.tags,
+      noteKey: d.noteKey,
+      noteGood: d.noteGood,
+      noteBad: d.noteBad,
     },
   })
   res.status(201).json({ game })
 })
 
-// ── GET /api/games ─────────────────────────────────────────────────────────
 router.get('/', async (req: Request, res: Response) => {
   const games = await prisma.game.findMany({
     where: { userId: req.user!.userId },
@@ -74,7 +65,6 @@ router.get('/', async (req: Request, res: Response) => {
   res.json({ games })
 })
 
-// ── GET /api/games/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req: Request, res: Response) => {
   const game = await prisma.game.findFirst({
     where: { id: req.params.id, userId: req.user!.userId },
@@ -83,10 +73,43 @@ router.get('/:id', async (req: Request, res: Response) => {
   res.json({ game })
 })
 
-// ── DELETE /api/games/:id ──────────────────────────────────────────────────
+// Édition d'une partie
+router.put('/:id', async (req: Request, res: Response) => {
+  const existing = await prisma.game.findFirst({
+    where: { id: req.params.id, userId: req.user!.userId },
+  })
+  if (!existing) return res.status(404).json({ error: 'Partie introuvable' })
+
+  const parsed = gameInputSchema.safeParse(req.body)
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Validation échouée', details: parsed.error.flatten().fieldErrors })
+  }
+
+  const d = parsed.data
+  const game = await prisma.game.update({
+    where: { id: req.params.id },
+    data: {
+      result: d.result,
+      advTeam: d.advTeam.filter(Boolean),
+      advLeads: d.advLeads.filter(Boolean),
+      myLeads: d.myLeads.filter(Boolean),
+      myPlayed: d.myPlayed.filter(Boolean),
+      archetype: d.archetype ?? null,
+      turn: d.turn ?? null,
+      speed: d.speed ?? null,
+      luck: d.luck ?? null,
+      mental: d.mental ?? null,
+      rating: d.rating ?? null,
+      tags: d.tags,
+      noteKey: d.noteKey,
+      noteGood: d.noteGood,
+      noteBad: d.noteBad,
+    },
+  })
+  res.json({ game })
+})
+
 router.delete('/:id', async (req: Request, res: Response) => {
-  // On s'assure que la partie appartient bien à l'utilisateur connecté
-  // avant de la supprimer.
   const game = await prisma.game.findFirst({
     where: { id: req.params.id, userId: req.user!.userId },
   })
@@ -94,6 +117,35 @@ router.delete('/:id', async (req: Request, res: Response) => {
 
   await prisma.game.delete({ where: { id: req.params.id } })
   res.status(204).send()
+})
+
+// Activer le partage public
+router.post('/:id/share', async (req: Request, res: Response) => {
+  const game = await prisma.game.findFirst({
+    where: { id: req.params.id, userId: req.user!.userId },
+  })
+  if (!game) return res.status(404).json({ error: 'Partie introuvable' })
+
+  const shareToken = game.shareToken || randomBytes(16).toString('hex')
+  const updated = await prisma.game.update({
+    where: { id: req.params.id },
+    data: { shareToken },
+  })
+  res.json({ game: updated, shareToken })
+})
+
+// Désactiver le partage
+router.delete('/:id/share', async (req: Request, res: Response) => {
+  const game = await prisma.game.findFirst({
+    where: { id: req.params.id, userId: req.user!.userId },
+  })
+  if (!game) return res.status(404).json({ error: 'Partie introuvable' })
+
+  const updated = await prisma.game.update({
+    where: { id: req.params.id },
+    data: { shareToken: null },
+  })
+  res.json({ game: updated })
 })
 
 export default router

@@ -4,6 +4,8 @@ export interface User {
   id: string
   email: string
   username: string
+  bio?: string
+  publicProfile?: boolean
   createdAt: string
 }
 
@@ -33,7 +35,9 @@ export interface Game {
   noteKey: string
   noteGood: string
   noteBad: string
+  shareToken?: string | null
   createdAt: string
+  updatedAt?: string
 }
 
 export interface Team {
@@ -59,4 +63,25 @@ export type CreateGameInput = {
   noteKey?: string
   noteGood?: string
   noteBad?: string
+}
+
+export interface PublicUserProfile {
+  user: {
+    username: string
+    bio: string
+    createdAt: string
+    team: string[]
+  }
+  stats: {
+    total: number
+    wins: number
+    losses: number
+    winrate: number
+  }
+  recentResults: GameResult[]
+}
+
+export interface SharedGameResponse {
+  game: Game
+  username: string
 }
